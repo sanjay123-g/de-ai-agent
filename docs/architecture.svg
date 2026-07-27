@@ -1,49 +1,105 @@
-<svg viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
-  <rect width="900" height="700" fill="#ffffff"/>
-  <rect x="330" y="20" width="240" height="60" rx="8" fill="#e8f0fe" stroke="#4285f4" stroke-width="2"/>
-  <text x="450" y="45" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">Source</text>
-  <text x="450" y="65" text-anchor="middle" font-size="12" fill="#444">CSV / SQLite / REST API</text>
-  <line x1="450" y1="80" x2="450" y2="110" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="300" y="110" width="300" height="55" rx="8" fill="#fff4e5" stroke="#e8710a" stroke-width="2"/>
-  <text x="450" y="132" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">schema_agent</text>
-  <text x="450" y="150" text-anchor="middle" font-size="11" fill="#444">infers types + nullability from real data</text>
-  <line x1="450" y1="165" x2="450" y2="195" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="300" y="195" width="300" height="55" rx="8" fill="#fff4e5" stroke="#e8710a" stroke-width="2"/>
-  <text x="450" y="217" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">ddl_agent</text>
-  <text x="450" y="235" text-anchor="middle" font-size="11" fill="#444">generates + executes CREATE TABLE in Snowflake</text>
-  <line x1="450" y1="250" x2="450" y2="280" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="270" y="280" width="360" height="70" rx="8" fill="#fff4e5" stroke="#e8710a" stroke-width="2"/>
-  <text x="450" y="302" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">ingest_agent</text>
-  <text x="450" y="320" text-anchor="middle" font-size="11" fill="#444">validates rows, writes to Bronze, dead-letters</text>
-  <text x="450" y="336" text-anchor="middle" font-size="11" fill="#444">failures, updates watermark, checks SLOs</text>
-  <line x1="450" y1="350" x2="450" y2="380" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="270" y="380" width="360" height="70" rx="8" fill="#fff4e5" stroke="#e8710a" stroke-width="2"/>
-  <text x="450" y="402" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">transform_agent</text>
-  <text x="450" y="420" text-anchor="middle" font-size="11" fill="#444">generates dbt staging model + schema.yml</text>
-  <text x="450" y="436" text-anchor="middle" font-size="11" fill="#444">with data-driven test suggestions</text>
-  <line x1="450" y1="450" x2="450" y2="480" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="300" y="480" width="300" height="55" rx="8" fill="#fff4e5" stroke="#e8710a" stroke-width="2"/>
-  <text x="450" y="502" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a1a">qa_agent</text>
-  <text x="450" y="520" text-anchor="middle" font-size="11" fill="#444">dbt compile → dbt run → dbt test</text>
-  <line x1="450" y1="535" x2="450" y2="565" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="180" y="565" width="200" height="50" rx="8" fill="#e6f4ea" stroke="#34a853" stroke-width="2"/>
-  <text x="280" y="595" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">done</text>
-  <rect x="520" y="565" width="200" height="50" rx="8" fill="#fce8e6" stroke="#ea4335" stroke-width="2"/>
-  <text x="620" y="590" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a1a1a">failure_node</text>
-  <text x="620" y="605" text-anchor="middle" font-size="10" fill="#444">Slack alert</text>
-  <line x1="400" y1="590" x2="380" y2="590" stroke="#34a853" stroke-width="2" marker-end="url(#arrowg)"/>
-  <line x1="500" y1="590" x2="520" y2="590" stroke="#ea4335" stroke-width="2" marker-end="url(#arrowr)"/>
-  <rect x="640" y="110" width="220" height="120" rx="8" fill="#f3e8fd" stroke="#a142f4" stroke-width="2" stroke-dasharray="4,3"/>
-  <text x="750" y="132" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a1a1a">supervisor.py</text>
-  <text x="750" y="150" text-anchor="middle" font-size="10" fill="#444">Deterministic routing —</text>
-  <text x="750" y="164" text-anchor="middle" font-size="10" fill="#444">reads state after each</text>
-  <text x="750" y="178" text-anchor="middle" font-size="10" fill="#444">node, decides next hop.</text>
-  <text x="750" y="192" text-anchor="middle" font-size="10" fill="#444">Retries live inside each</text>
-  <text x="750" y="206" text-anchor="middle" font-size="10" fill="#444">agent (tenacity), not the</text>
-  <text x="750" y="220" text-anchor="middle" font-size="10" fill="#444">graph itself.</text>
+<svg viewBox="0 0 1000 780" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#666"/></marker>
-    <marker id="arrowg" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#34a853"/></marker>
-    <marker id="arrowr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#ea4335"/></marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowg" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrowr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#f1f5f9"/>
+    </linearGradient>
   </defs>
+
+  <rect width="1000" height="780" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="40" y="45" font-size="20" font-weight="700" fill="#0f172a">de-ai-agent — Pipeline Architecture</text>
+  <text x="40" y="66" font-size="12.5" fill="#64748b">One LangGraph run per source · agents in sequence · deterministic routing</text>
+  <line x1="40" y1="82" x2="960" y2="82" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Source -->
+  <rect x="370" y="112" width="260" height="58" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="500" y="136" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">SOURCE</text>
+  <text x="500" y="154" text-anchor="middle" font-size="11.5" fill="#475569">CSV · SQLite · REST API</text>
+
+  <line x1="500" y1="170" x2="500" y2="196" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Agent stack -->
+  <g>
+    <rect x="330" y="196" width="340" height="60" rx="10" fill="#ffffff" stroke="#f97316" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="330" y="196" width="6" height="60" rx="3" fill="#f97316"/>
+    <text x="356" y="221" font-size="13.5" font-weight="700" fill="#0f172a">schema_agent</text>
+    <text x="356" y="240" font-size="11.5" fill="#64748b">Infers column types + nullability from real data</text>
+  </g>
+
+  <line x1="500" y1="256" x2="500" y2="282" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="330" y="282" width="340" height="60" rx="10" fill="#ffffff" stroke="#f97316" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="330" y="282" width="6" height="60" rx="3" fill="#f97316"/>
+    <text x="356" y="307" font-size="13.5" font-weight="700" fill="#0f172a">ddl_agent</text>
+    <text x="356" y="326" font-size="11.5" fill="#64748b">Generates + executes CREATE TABLE in Snowflake</text>
+  </g>
+
+  <line x1="500" y1="342" x2="500" y2="368" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="300" y="368" width="400" height="74" rx="10" fill="#ffffff" stroke="#f97316" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="300" y="368" width="6" height="74" rx="3" fill="#f97316"/>
+    <text x="326" y="394" font-size="13.5" font-weight="700" fill="#0f172a">ingest_agent</text>
+    <text x="326" y="413" font-size="11.5" fill="#64748b">Validates rows · writes to Bronze · routes failures</text>
+    <text x="326" y="430" font-size="11.5" fill="#64748b">to dead-letter · updates watermark · checks SLOs</text>
+  </g>
+
+  <line x1="500" y1="442" x2="500" y2="468" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="300" y="468" width="400" height="74" rx="10" fill="#ffffff" stroke="#f97316" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="300" y="468" width="6" height="74" rx="3" fill="#f97316"/>
+    <text x="326" y="494" font-size="13.5" font-weight="700" fill="#0f172a">transform_agent</text>
+    <text x="326" y="513" font-size="11.5" fill="#64748b">Generates dbt staging model + schema.yml with</text>
+    <text x="326" y="530" font-size="11.5" fill="#64748b">data-driven test suggestions</text>
+  </g>
+
+  <line x1="500" y1="542" x2="500" y2="568" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="330" y="568" width="340" height="60" rx="10" fill="#ffffff" stroke="#f97316" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="330" y="568" width="6" height="60" rx="3" fill="#f97316"/>
+    <text x="356" y="593" font-size="13.5" font-weight="700" fill="#0f172a">qa_agent</text>
+    <text x="356" y="612" font-size="11.5" fill="#64748b">dbt compile → dbt run → dbt test</text>
+  </g>
+
+  <line x1="500" y1="628" x2="500" y2="654" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="500" y1="654" x2="400" y2="680" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrowg)"/>
+  <line x1="500" y1="654" x2="600" y2="680" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowr)"/>
+
+  <!-- Terminal nodes -->
+  <rect x="240" y="684" width="180" height="52" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="330" y="715" text-anchor="middle" font-size="13.5" font-weight="700" fill="#14532d">done</text>
+
+  <rect x="580" y="684" width="180" height="52" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="670" y="708" text-anchor="middle" font-size="13.5" font-weight="700" fill="#7f1d1d">failure_node</text>
+  <text x="670" y="724" text-anchor="middle" font-size="10.5" fill="#991b1b">Slack alert</text>
+
+  <!-- Supervisor sidebar note -->
+  <rect x="730" y="196" width="230" height="146" rx="10" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3,3" filter="url(#shadow)"/>
+  <text x="750" y="222" font-size="13" font-weight="700" fill="#581c87">supervisor.py</text>
+  <text x="750" y="244" font-size="11" fill="#6b21a8">Deterministic routing logic —</text>
+  <text x="750" y="260" font-size="11" fill="#6b21a8">reads state["status"] after each</text>
+  <text x="750" y="276" font-size="11" fill="#6b21a8">node and decides the next hop.</text>
+  <text x="750" y="298" font-size="11" fill="#6b21a8">Retries live inside each agent</text>
+  <text x="750" y="314" font-size="11" fill="#6b21a8">(tenacity) — the graph itself</text>
+  <text x="750" y="330" font-size="11" fill="#6b21a8">stays acyclic.</text>
+
+  <!-- Legend -->
+  <text x="40" y="760" font-size="10.5" fill="#94a3b8">6 sources run through this graph independently — one full state per invocation, no shared mutation between runs.</text>
 </svg>
