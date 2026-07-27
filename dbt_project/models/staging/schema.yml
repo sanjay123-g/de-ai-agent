@@ -1,0 +1,275 @@
+version: 2
+sources:
+- name: bronze
+  database: DE_AI_AGENT_DEV
+  schema: BRONZE
+  tables: []
+models:
+- name: stg_historical_results
+  description: Silver staging model for historical results
+  columns:
+  - name: date
+    description: Raw date from Bronze RAW_HISTORICAL_RESULTS
+    tests:
+    - not_null
+  - name: home_team
+    description: Raw home team from Bronze RAW_HISTORICAL_RESULTS
+    tests:
+    - not_null
+  - name: away_team
+    description: Raw away team from Bronze RAW_HISTORICAL_RESULTS
+    tests:
+    - not_null
+  - name: home_score
+    description: Raw home score from Bronze RAW_HISTORICAL_RESULTS
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0
+        strictly: false
+  - name: away_score
+    description: Raw away score from Bronze RAW_HISTORICAL_RESULTS
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0
+        strictly: false
+  - name: tournament
+    description: Raw tournament from Bronze RAW_HISTORICAL_RESULTS
+    tests:
+    - not_null
+    - accepted_values:
+        values:
+        - British Home Championship
+        - Copa América
+        - Copa Lipton
+        - Copa Newton
+        - Copa Premio Honor Argentino
+        - Copa Premio Honor Uruguayo
+        - Copa Roca
+        - Far Eastern Championship Games
+        - Friendly
+        - Muratti Vase
+        - Olympic Games
+        - Évence Coppée Trophy
+  - name: city
+    description: Raw city from Bronze RAW_HISTORICAL_RESULTS
+    tests:
+    - not_null
+  - name: country
+    description: Raw country from Bronze RAW_HISTORICAL_RESULTS
+    tests:
+    - not_null
+  - name: neutral
+    description: Raw neutral from Bronze RAW_HISTORICAL_RESULTS
+    tests:
+    - not_null
+- name: stg_historical_goals
+  description: Silver staging model for historical goals
+  columns:
+  - name: date
+    description: Raw date from Bronze RAW_HISTORICAL_GOALS
+    tests:
+    - not_null
+  - name: home_team
+    description: Raw home team from Bronze RAW_HISTORICAL_GOALS
+    tests:
+    - not_null
+  - name: away_team
+    description: Raw away team from Bronze RAW_HISTORICAL_GOALS
+    tests:
+    - not_null
+  - name: team
+    description: Raw team from Bronze RAW_HISTORICAL_GOALS
+    tests:
+    - not_null
+  - name: scorer
+    description: Raw scorer from Bronze RAW_HISTORICAL_GOALS
+    meta:
+      pii: true
+    tests:
+    - not_null
+  - name: minute
+    description: Raw minute from Bronze RAW_HISTORICAL_GOALS
+    tests:
+    - not_null
+    - dbt_expectations.expect_column_values_to_be_between:
+        min_value: 0
+        strictly: false
+  - name: own_goal
+    description: Raw own goal from Bronze RAW_HISTORICAL_GOALS
+    tests:
+    - not_null
+  - name: penalty
+    description: Raw penalty from Bronze RAW_HISTORICAL_GOALS
+    tests:
+    - not_null
+- name: stg_historical_shootouts
+  description: Silver staging model for historical shootouts
+  columns:
+  - name: date
+    description: Raw date from Bronze RAW_HISTORICAL_SHOOTOUTS
+    tests:
+    - not_null
+  - name: home_team
+    description: Raw home team from Bronze RAW_HISTORICAL_SHOOTOUTS
+    tests:
+    - not_null
+  - name: away_team
+    description: Raw away team from Bronze RAW_HISTORICAL_SHOOTOUTS
+    tests:
+    - not_null
+  - name: winner
+    description: Raw winner from Bronze RAW_HISTORICAL_SHOOTOUTS
+    tests:
+    - not_null
+  - name: first_shooter
+    description: Raw first shooter from Bronze RAW_HISTORICAL_SHOOTOUTS
+- name: stg_worldcup_api
+  description: Silver staging model for worldcup api
+  columns:
+  - name: match_num
+    description: Raw match num from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: match_date
+    description: Raw match date from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: match_time
+    description: Raw match time from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: round_name
+    description: Raw round name from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: group_name
+    description: Raw group name from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: ground
+    description: Raw ground from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: team1_name
+    description: Raw team1 name from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: team2_name
+    description: Raw team2 name from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: score_ft_team1
+    description: Raw score ft team1 from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: score_ft_team2
+    description: Raw score ft team2 from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: score_ht_team1
+    description: Raw score ht team1 from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+  - name: score_ht_team2
+    description: Raw score ht team2 from Bronze RAW_WC2026_MATCHES
+    tests:
+    - not_null
+- name: stg_worldcup_api_secondary
+  description: Silver staging model for worldcup api secondary
+  columns:
+  - name: match_num
+    description: Raw match num from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: match_date
+    description: Raw match date from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: round_name
+    description: Raw round name from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: team1_name
+    description: Raw team1 name from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: team2_name
+    description: Raw team2 name from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: scoring_team
+    description: Raw scoring team from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: scorer_name
+    description: Raw scorer name from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: minute
+    description: Raw minute from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: is_team1_goal
+    description: Raw is team1 goal from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: is_own_goal
+    description: Raw is own goal from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+  - name: is_penalty
+    description: Raw is penalty from Bronze RAW_WC2026_GOALS
+    tests:
+    - not_null
+- name: stg_national_teams
+  description: Silver staging model for national teams
+  columns:
+  - name: team_name
+    description: Raw team name from Bronze RAW_NATIONAL_TEAMS
+    tests:
+    - not_null
+  - name: fifa_code
+    description: Raw fifa code from Bronze RAW_NATIONAL_TEAMS
+    tests:
+    - not_null
+  - name: group_name
+    description: Raw group name from Bronze RAW_NATIONAL_TEAMS
+    tests:
+    - not_null
+- name: stg_player_profiles
+  description: Silver staging model for player profiles
+  columns:
+  - name: player_id
+    description: Raw player id from Bronze RAW_PLAYER_PROFILES
+    tests:
+    - not_null
+  - name: player_name
+    description: Raw player name from Bronze RAW_PLAYER_PROFILES
+    tests:
+    - not_null
+  - name: team_name
+    description: Raw team name from Bronze RAW_PLAYER_PROFILES
+    tests:
+    - not_null
+  - name: position
+    description: Raw position from Bronze RAW_PLAYER_PROFILES
+    tests:
+    - not_null
+  - name: jersey_number
+    description: Raw jersey number from Bronze RAW_PLAYER_PROFILES
+    tests:
+    - not_null
+  - name: club_name
+    description: Raw club name from Bronze RAW_PLAYER_PROFILES
+    tests:
+    - not_null
+  - name: club_country
+    description: Raw club country from Bronze RAW_PLAYER_PROFILES
+    tests:
+    - not_null
+  - name: date_of_birth
+    description: Raw date of birth from Bronze RAW_PLAYER_PROFILES
+    tests:
+    - not_null

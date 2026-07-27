@@ -1,0 +1,21 @@
+version: 2
+sources:
+- name: bronze
+  database: DE_AI_AGENT_DEV
+  schema: BRONZE
+  description: Raw Bronze layer — unmodified data from all ingestion sources
+  tables:
+  - name: RAW_HISTORICAL_RESULTS
+    description: Historical international match results
+  - name: RAW_HISTORICAL_GOALS
+    description: Historical international goal scorers
+  - name: RAW_HISTORICAL_SHOOTOUTS
+    description: Historical penalty shootout outcomes
+  - name: RAW_WC2026_MATCHES
+    description: Live 2026 World Cup match data
+  - name: RAW_WC2026_GOALS
+    description: Live 2026 World Cup goal data
+  - name: RAW_NATIONAL_TEAMS
+    description: WC 2026 national team profiles
+  - name: RAW_PLAYER_PROFILES
+    description: Synthetic player profiles

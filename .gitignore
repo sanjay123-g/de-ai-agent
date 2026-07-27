@@ -31,3 +31,6 @@ data/*.db
 
 # Mac
 .DS_Store
+dbt_project/dbt_packages/
+dbt_project/target/
+dbt_project/logs/

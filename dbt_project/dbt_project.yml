@@ -1,0 +1,48 @@
+name: 'de_ai_agent'
+version: '1.0.0'
+config-version: 2
+
+profile: 'de_ai_agent'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  de_ai_agent:
+    staging:
+      +schema: SILVER
+      +materialized: view
+      +docs:
+        node_color: "#1E88E5"
+
+    silver:
+      +schema: SILVER
+      +materialized: table
+      +docs:
+        node_color: "#43A047"
+
+    gold:
+      +schema: GOLD
+      +materialized: table
+      +tags: ["gold", "mart"]
+      +docs:
+        node_color: "#F9A825"
+
+seeds:
+  de_ai_agent:
+    +schema: SILVER
+    former_names:
+      +column_types:
+        current: varchar
+        former: varchar
+        start_date: varchar
+        end_date: varchar

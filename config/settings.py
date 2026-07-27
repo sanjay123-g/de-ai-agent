@@ -1,79 +1,56 @@
 """
 config/settings.py
-All runtime configuration via Pydantic BaseSettings.
-Values are loaded from environment variables or a .env file.
-Never hardcode secrets — reference this module everywhere.
+==================
+Central Pydantic settings — reads from .env file and environment variables.
+All credentials and configuration for Snowflake, Ollama, dbt, and FastAPI.
 """
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
-from functools import lru_cache
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore",
-    )
-
-    # ── Snowflake ──────────────────────────────────────────────
-    snowflake_account: str = Field(..., description="e.g. xy12345.us-east-1")
-    snowflake_user: str
-    snowflake_password: str
+    # ── Snowflake ──────────────────────────────────────────────────────────
+    snowflake_account:   str = ""
+    snowflake_user:      str = ""
+    snowflake_password:  str = ""
+    snowflake_database:  str = "DE_AI_AGENT_DEV"
+    snowflake_schema:    str = "BRONZE"
     snowflake_warehouse: str = "DE_WH"
-    snowflake_database_dev: str = "DE_AI_AGENT_DEV"
-    snowflake_database_prod: str = "DE_AI_AGENT_PROD"
+    snowflake_role:      str = "DE_INGEST_ROLE"
 
-    # Role per operation type
-    snowflake_ingest_role: str = "DE_INGEST_ROLE"
-    snowflake_transform_role: str = "DE_TRANSFORM_ROLE"
-    snowflake_serving_role: str = "DE_SERVING_ROLE"
+    # ── dbt ───────────────────────────────────────────────────────────────
+    dbt_target: str = "dev"
+    dbt_project_dir: str = "./dbt_project"
 
-    # ── Environment ───────────────────────────────────────────
-    dbt_target: str = Field(default="dev", description="dev or prod")
+    # ── Data source paths ────────────────────────────────────────────────
+    superstore_csv_path: str = "./data/superstore.csv"
+    sqlite_db_path: str = "./data/source.db"
+    open_meteo_latitude: float = 49.2827
+    open_meteo_longitude: float = -123.1207
+    open_meteo_lookback_days: int = 7
 
-    @property
-    def snowflake_database(self) -> str:
-        return self.snowflake_database_prod if self.dbt_target == "prod" else self.snowflake_database_dev
+    # ── Ollama (local LLM) ────────────────────────────────────────────────
+    ollama_model:       str = "llama3.1:8b"
+    ollama_embed_model: str = "nomic-embed-text"
+    ollama_base_url:    str = "http://localhost:11434"
 
-    # ── LLM / Groq ────────────────────────────────────────────
-    groq_api_key: str
-    groq_model: str = "llama-3.3-70b-versatile"
-    groq_max_tokens: int = 1024           # cap per call — free tier safety
-    agent_history_limit: int = 10         # max messages in chat history
-    agent_sql_row_limit: int = 20         # max rows returned to LLM from SQL
+    # ── FastAPI ───────────────────────────────────────────────────────────
+    api_key: str = "deagent-local-key-2026"
 
-    # ── Paths ─────────────────────────────────────────────────
-    project_root: str = "~/AI_Projects/de-ai-agent"
-    chroma_persist_dir: str = "~/AI_Projects/de-ai-agent/.chroma"
-    dbt_project_dir: str = "~/AI_Projects/de-ai-agent/dbt_project"
-    dbt_profiles_dir: str = "~/AI_Projects/de-ai-agent/dbt_project"
-    sqlite_db_path: str = "~/AI_Projects/de-ai-agent/data/products.db"
-    superstore_csv_path: str = "~/AI_Projects/de-ai-agent/data/superstore_sales.csv"
+    # ── Optional: Slack alerts ────────────────────────────────────────────
+    slack_webhook_url: str = ""
 
-    # ── Ingestion ─────────────────────────────────────────────
-    open_meteo_latitude: float = 49.2497   # Vancouver, BC
-    open_meteo_longitude: float = -123.1193
-    open_meteo_lookback_days: int = 7      # incremental: days to fetch if no watermark
-    dead_letter_alert_threshold: int = 50  # Slack alert if dead_letter rows exceed this
+    # ── Optional: GitHub PR ───────────────────────────────────────────────
+    github_token: str = ""
 
-    # ── FastAPI ───────────────────────────────────────────────
-    api_key: str = Field(..., description="X-API-Key header value")
-    api_host: str = "0.0.0.0"
-    api_port: int = 8000
-    streamlit_origin: str = "http://localhost:8501"
-
-    # ── Slack ─────────────────────────────────────────────────
-    slack_webhook_url: str = Field(default="", description="Slack incoming webhook URL")
-    slack_alerts_enabled: bool = True
-
-    # ── Prefect ───────────────────────────────────────────────
-    prefect_api_url: str = "http://localhost:4200/api"
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        extra = "ignore"           # silently ignore unknown .env keys
 
 
-@lru_cache(maxsize=1)
+settings = Settings()
+
+
 def get_settings() -> Settings:
-    """Cached singleton — import and call this everywhere."""
-    return Settings()
+    return settings
