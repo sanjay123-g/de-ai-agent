@@ -24,7 +24,7 @@ logger = structlog.get_logger()
 settings = get_settings()
 
 _MART_SCHEMA_CONTEXT = """
-Available tables (Snowflake schema GOLD):
+Available tables (Snowflake schema SILVER):
 
 mart_team_performance(team, tournament, matches_played, wins, draws, losses,
   win_pct, points, goals_for, goals_against, goal_difference,
@@ -85,22 +85,22 @@ def _get_categorical_context() -> str:
         cur.execute("""
             SELECT table_name, column_name
             FROM DE_AI_AGENT_DEV.INFORMATION_SCHEMA.COLUMNS
-            WHERE table_schema = 'GOLD'
+            WHERE table_schema = 'SILVER'
               AND table_name ILIKE 'MART_%%'
               AND data_type IN ('TEXT', 'VARCHAR', 'STRING')
         """)
         candidates = cur.fetchall()
         for table_name, column_name in candidates:
             cur.execute(
-                f'SELECT COUNT(DISTINCT "{column_name}"), COUNT(*) FROM GOLD.{table_name}'
+                f'SELECT COUNT(DISTINCT "{column_name}"), COUNT(*) FROM SILVER.{table_name}'
             )
             distinct_count, total = cur.fetchone()
             if not total:
                 continue
             if distinct_count / total <= 0.10 and distinct_count <= 60:
-                cur.execute(f'SELECT DISTINCT "{column_name}" FROM GOLD.{table_name} ORDER BY 1')
+                cur.execute(f'SELECT DISTINCT "{column_name}" FROM SILVER.{table_name} ORDER BY 1')
                 values = [r[0] for r in cur.fetchall()]
-                lines.append(f'Actual {column_name} values in GOLD.{table_name}: {values}')
+                lines.append(f'Actual {column_name} values in SILVER.{table_name}: {values}')
         return "\n".join(lines) if lines else "No categorical columns detected."
     finally:
         conn.close()
