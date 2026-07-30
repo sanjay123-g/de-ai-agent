@@ -30,7 +30,7 @@ models:
       +docs:
         node_color: "#43A047"
 
-    gold:
+    marts:
       +schema: GOLD
       +materialized: table
       +tags: ["gold", "mart"]
