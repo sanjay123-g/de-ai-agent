@@ -473,11 +473,24 @@ def transform_agent_node(state: AgentState) -> dict[str, Any]:
 
         model_path = _write_staging_model(model_name, llm_result["model_sql"])
 
+        # Filter out not_null tests on columns known to be nullable from
+        # real data (schema_agent's null-rate scan), regardless of whether
+        # this schema.yml came from the LLM path or the fallback path —
+        # both must respect the same data-driven nullability facts.
+        raw_tests = llm_result.get("suggested_tests", {})
+        known_nullable = {c.lower() for c in (state.get("nullable_columns") or set())}
+        filtered_tests = {}
+        for col, tests in raw_tests.items():
+            if col in known_nullable:
+                tests = [t for t in tests if t != "not_null"]
+            if tests:
+                filtered_tests[col] = tests
+
         try:
             _write_schema_yml_entry(
                 model_name,
                 llm_result.get("column_descriptions", {}),
-                llm_result.get("suggested_tests", {}),
+                filtered_tests,
                 schema_map,
                 llm_result.get("nonnegative_columns"),
                 llm_result.get("categorical_columns"),

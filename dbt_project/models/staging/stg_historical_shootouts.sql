@@ -1,16 +1,24 @@
-with source as (
-    select * from {{ source('bronze', 'RAW_HISTORICAL_SHOOTOUTS') }}
+-- Staging model for historical shootouts
+WITH source AS (
+    SELECT
+        *
+    FROM {{ source('bronze', 'RAW_HISTORICAL_SHOOTOUTS') }}
 ),
-
-renamed as (
-    select
-    DATE AS date,
-    HOME_TEAM AS home_team,
-    AWAY_TEAM AS away_team,
-    WINNER AS winner,
-    FIRST_SHOOTER AS first_shooter,
+renamed AS (
+    SELECT
+        TRY_CAST(date AS DATE) AS date,
+        LOWER(home_team) AS home_team,
+        LOWER(away_team) AS away_team,
+        LOWER(winner) AS winner,
+        LOWER(first_shooter) AS first_shooter,
         CURRENT_TIMESTAMP() AS _loaded_at
-    from source
+    FROM source
 )
-
-select * from renamed
+SELECT
+    date,
+    home_team,
+    away_team,
+    winner,
+    first_shooter,
+    _loaded_at
+FROM renamed

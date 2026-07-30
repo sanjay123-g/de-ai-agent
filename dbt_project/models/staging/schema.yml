@@ -108,23 +108,26 @@ models:
   description: Silver staging model for historical shootouts
   columns:
   - name: date
-    description: Raw date from Bronze RAW_HISTORICAL_SHOOTOUTS
+    description: The date of the shootout.
     tests:
     - not_null
   - name: home_team
-    description: Raw home team from Bronze RAW_HISTORICAL_SHOOTOUTS
+    description: The name of the home team in lowercase.
     tests:
     - not_null
   - name: away_team
-    description: Raw away team from Bronze RAW_HISTORICAL_SHOOTOUTS
+    description: The name of the away team in lowercase.
     tests:
     - not_null
   - name: winner
-    description: Raw winner from Bronze RAW_HISTORICAL_SHOOTOUTS
+    description: The winner of the shootout in lowercase.
     tests:
     - not_null
   - name: first_shooter
-    description: Raw first shooter from Bronze RAW_HISTORICAL_SHOOTOUTS
+    description: The first shooter in the shootout in lowercase.
+  - name: _loaded_at
+    description: Timestamp indicating when the record was loaded into the staging
+      layer.
 - name: stg_worldcup_api
   description: Silver staging model for worldcup api
   columns:

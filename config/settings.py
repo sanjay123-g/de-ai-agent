@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     open_meteo_lookback_days: int = 7
 
     # ── Ollama (local LLM) ────────────────────────────────────────────────
-    ollama_model:       str = "llama3.1:8b"
+    ollama_model:       str = "qwen2.5-coder:14b"
     ollama_embed_model: str = "nomic-embed-text"
     ollama_base_url:    str = "http://localhost:11434"
 
