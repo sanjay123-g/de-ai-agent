@@ -1,19 +1,30 @@
-with source as (
-    select * from {{ source('bronze', 'RAW_PLAYER_PROFILES') }}
+-- Staging model for player_profiles
+WITH source AS (
+    SELECT
+        *
+    FROM {{ source('bronze', 'RAW_PLAYER_PROFILES') }}
 ),
-
-renamed as (
-    select
-    PLAYER_ID AS player_id,
-    PLAYER_NAME AS player_name,
-    TEAM_NAME AS team_name,
-    POSITION AS position,
-    JERSEY_NUMBER AS jersey_number,
-    CLUB_NAME AS club_name,
-    CLUB_COUNTRY AS club_country,
-    DATE_OF_BIRTH AS date_of_birth,
+renamed AS (
+    SELECT
+        TRY_CAST(player_id AS VARCHAR) AS player_id,
+        LOWER(player_name) AS player_name,
+        LOWER(team_name) AS team_name,
+        LOWER(position) AS position,
+        jersey_number::NUMBER AS jersey_number,
+        LOWER(club_name) AS club_name,
+        LOWER(club_country) AS club_country,
+        TRY_CAST(date_of_birth AS DATE) AS date_of_birth,
         CURRENT_TIMESTAMP() AS _loaded_at
-    from source
+    FROM source
 )
-
-select * from renamed
+SELECT
+    player_id,
+    player_name,
+    team_name,
+    position,
+    jersey_number,
+    club_name,
+    club_country,
+    date_of_birth,
+    _loaded_at
+FROM renamed

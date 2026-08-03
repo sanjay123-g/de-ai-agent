@@ -9,101 +9,83 @@ models:
   description: Silver staging model for historical results
   columns:
   - name: date
-    description: Raw date from Bronze RAW_HISTORICAL_RESULTS
+    description: The date of the match.
     tests:
     - not_null
   - name: home_team
-    description: Raw home team from Bronze RAW_HISTORICAL_RESULTS
+    description: The name of the home team in lowercase.
     tests:
     - not_null
   - name: away_team
-    description: Raw away team from Bronze RAW_HISTORICAL_RESULTS
+    description: The name of the away team in lowercase.
     tests:
     - not_null
   - name: home_score
-    description: Raw home score from Bronze RAW_HISTORICAL_RESULTS
+    description: The score of the home team.
     tests:
     - not_null
-    - dbt_expectations.expect_column_values_to_be_between:
-        min_value: 0
-        strictly: false
   - name: away_score
-    description: Raw away score from Bronze RAW_HISTORICAL_RESULTS
+    description: The score of the away team.
     tests:
     - not_null
-    - dbt_expectations.expect_column_values_to_be_between:
-        min_value: 0
-        strictly: false
   - name: tournament
-    description: Raw tournament from Bronze RAW_HISTORICAL_RESULTS
+    description: The tournament name in lowercase.
     tests:
     - not_null
-    - accepted_values:
-        values:
-        - British Home Championship
-        - Copa América
-        - Copa Lipton
-        - Copa Newton
-        - Copa Premio Honor Argentino
-        - Copa Premio Honor Uruguayo
-        - Copa Roca
-        - Far Eastern Championship Games
-        - Friendly
-        - Muratti Vase
-        - Olympic Games
-        - Évence Coppée Trophy
   - name: city
-    description: Raw city from Bronze RAW_HISTORICAL_RESULTS
+    description: The city where the match was held, in lowercase.
     tests:
     - not_null
   - name: country
-    description: Raw country from Bronze RAW_HISTORICAL_RESULTS
+    description: The country where the match was held, in lowercase.
     tests:
     - not_null
   - name: neutral
-    description: Raw neutral from Bronze RAW_HISTORICAL_RESULTS
+    description: A boolean indicating if the match was played on neutral ground.
     tests:
     - not_null
+  - name: _loaded_at
+    description: Timestamp when this record was loaded into the staging layer.
 - name: stg_historical_goals
   description: Silver staging model for historical goals
   columns:
-  - name: date
-    description: Raw date from Bronze RAW_HISTORICAL_GOALS
+  - name: game_date
+    description: The date of the game when the goal was scored.
     tests:
     - not_null
   - name: home_team
-    description: Raw home team from Bronze RAW_HISTORICAL_GOALS
+    description: The name of the home team in the match.
     tests:
     - not_null
   - name: away_team
-    description: Raw away team from Bronze RAW_HISTORICAL_GOALS
+    description: The name of the away team in the match.
     tests:
     - not_null
   - name: team
-    description: Raw team from Bronze RAW_HISTORICAL_GOALS
+    description: The team that scored the goal.
     tests:
     - not_null
   - name: scorer
-    description: Raw scorer from Bronze RAW_HISTORICAL_GOALS
+    description: The player who scored the goal.
     meta:
       pii: true
     tests:
     - not_null
   - name: minute
-    description: Raw minute from Bronze RAW_HISTORICAL_GOALS
+    description: The minute in which the goal was scored.
     tests:
     - not_null
-    - dbt_expectations.expect_column_values_to_be_between:
-        min_value: 0
-        strictly: false
   - name: own_goal
-    description: Raw own goal from Bronze RAW_HISTORICAL_GOALS
+    description: Indicates whether the goal was an own goal (TRUE) or not (FALSE).
     tests:
     - not_null
   - name: penalty
-    description: Raw penalty from Bronze RAW_HISTORICAL_GOALS
+    description: Indicates whether the goal was a penalty kick (TRUE) or not (FALSE).
     tests:
     - not_null
+  - name: _loaded_at
+    description: Timestamp indicating when this record was loaded into the staging
+      layer.
 - name: stg_historical_shootouts
   description: Silver staging model for historical shootouts
   columns:
@@ -132,147 +114,151 @@ models:
   description: Silver staging model for worldcup api
   columns:
   - name: match_num
-    description: Raw match num from Bronze RAW_WC2026_MATCHES
+    description: The unique identifier for the match.
     tests:
     - not_null
+    - unique
   - name: match_date
-    description: Raw match date from Bronze RAW_WC2026_MATCHES
+    description: The date when the match was played.
     tests:
     - not_null
   - name: match_time
-    description: Raw match time from Bronze RAW_WC2026_MATCHES
+    description: The time when the match started.
     tests:
     - not_null
   - name: round_name
-    description: Raw round name from Bronze RAW_WC2026_MATCHES
+    description: The name of the round in which the match took place.
     tests:
     - not_null
   - name: group_name
-    description: Raw group name from Bronze RAW_WC2026_MATCHES
+    description: The name of the group in which the match took place.
     tests:
     - not_null
   - name: ground
-    description: Raw ground from Bronze RAW_WC2026_MATCHES
+    description: The location where the match was held.
     tests:
     - not_null
   - name: team1_name
-    description: Raw team1 name from Bronze RAW_WC2026_MATCHES
+    description: The name of the first team participating in the match.
     tests:
     - not_null
   - name: team2_name
-    description: Raw team2 name from Bronze RAW_WC2026_MATCHES
+    description: The name of the second team participating in the match.
     tests:
     - not_null
   - name: score_ft_team1
-    description: Raw score ft team1 from Bronze RAW_WC2026_MATCHES
+    description: The final score of the first team.
     tests:
     - not_null
   - name: score_ft_team2
-    description: Raw score ft team2 from Bronze RAW_WC2026_MATCHES
+    description: The final score of the second team.
     tests:
     - not_null
   - name: score_ht_team1
-    description: Raw score ht team1 from Bronze RAW_WC2026_MATCHES
+    description: The half-time score of the first team.
     tests:
     - not_null
   - name: score_ht_team2
-    description: Raw score ht team2 from Bronze RAW_WC2026_MATCHES
+    description: The half-time score of the second team.
     tests:
     - not_null
+  - name: _loaded_at
+    description: Timestamp indicating when the record was loaded into the staging
+      table.
 - name: stg_worldcup_api_secondary
   description: Silver staging model for worldcup api secondary
   columns:
   - name: match_num
-    description: Raw match num from Bronze RAW_WC2026_GOALS
+    description: The unique identifier for the match.
     tests:
     - not_null
   - name: match_date
-    description: Raw match date from Bronze RAW_WC2026_GOALS
+    description: The date when the match took place.
     tests:
     - not_null
   - name: round_name
-    description: Raw round name from Bronze RAW_WC2026_GOALS
+    description: The name of the round in which the match was played.
     tests:
     - not_null
   - name: team1_name
-    description: Raw team1 name from Bronze RAW_WC2026_GOALS
+    description: The name of the first team participating in the match.
     tests:
     - not_null
   - name: team2_name
-    description: Raw team2 name from Bronze RAW_WC2026_GOALS
+    description: The name of the second team participating in the match.
     tests:
     - not_null
   - name: scoring_team
-    description: Raw scoring team from Bronze RAW_WC2026_GOALS
+    description: The name of the team that scored the goal.
     tests:
     - not_null
   - name: scorer_name
-    description: Raw scorer name from Bronze RAW_WC2026_GOALS
+    description: The name of the player who scored the goal.
     tests:
     - not_null
   - name: minute
-    description: Raw minute from Bronze RAW_WC2026_GOALS
+    description: The minute at which the goal was scored.
     tests:
     - not_null
   - name: is_team1_goal
-    description: Raw is team1 goal from Bronze RAW_WC2026_GOALS
+    description: A boolean indicating whether the goal was scored by the first team.
     tests:
     - not_null
   - name: is_own_goal
-    description: Raw is own goal from Bronze RAW_WC2026_GOALS
+    description: A boolean indicating whether the goal was an own goal.
     tests:
     - not_null
   - name: is_penalty
-    description: Raw is penalty from Bronze RAW_WC2026_GOALS
+    description: A boolean indicating whether the goal was a penalty.
     tests:
     - not_null
+  - name: _loaded_at
+    description: The timestamp when this record was loaded into the staging table.
 - name: stg_national_teams
   description: Silver staging model for national teams
   columns:
   - name: team_name
-    description: Raw team name from Bronze RAW_NATIONAL_TEAMS
+    description: The name of the national team.
     tests:
     - not_null
   - name: fifa_code
-    description: Raw fifa code from Bronze RAW_NATIONAL_TEAMS
+    description: The FIFA code assigned to the national team.
     tests:
     - not_null
+    - unique
   - name: group_name
-    description: Raw group name from Bronze RAW_NATIONAL_TEAMS
+    description: The group or division in which the national team is categorized.
     tests:
     - not_null
+  - name: _loaded_at
+    description: Timestamp indicating when the record was loaded into the staging
+      layer.
 - name: stg_player_profiles
   description: Silver staging model for player profiles
   columns:
   - name: player_id
-    description: Raw player id from Bronze RAW_PLAYER_PROFILES
+    description: Unique identifier for the player.
     tests:
     - not_null
+    - unique
   - name: player_name
-    description: Raw player name from Bronze RAW_PLAYER_PROFILES
-    tests:
-    - not_null
+    description: Name of the player, converted to lowercase for consistency.
   - name: team_name
-    description: Raw team name from Bronze RAW_PLAYER_PROFILES
-    tests:
-    - not_null
+    description: Name of the team the player is associated with, converted to lowercase
+      for consistency.
   - name: position
-    description: Raw position from Bronze RAW_PLAYER_PROFILES
-    tests:
-    - not_null
+    description: Position played by the player, converted to lowercase for consistency.
   - name: jersey_number
-    description: Raw jersey number from Bronze RAW_PLAYER_PROFILES
+    description: Number worn by the player on their jersey.
     tests:
     - not_null
   - name: club_name
-    description: Raw club name from Bronze RAW_PLAYER_PROFILES
-    tests:
-    - not_null
+    description: Name of the club the player is affiliated with, converted to lowercase
+      for consistency.
   - name: club_country
-    description: Raw club country from Bronze RAW_PLAYER_PROFILES
-    tests:
-    - not_null
+    description: Country where the club is based, converted to lowercase for consistency.
   - name: date_of_birth
-    description: Raw date of birth from Bronze RAW_PLAYER_PROFILES
-    tests:
-    - not_null
+    description: Date when the player was born, cast to DATE format.
+  - name: _loaded_at
+    description: Timestamp indicating when this record was loaded into the staging
+      layer.

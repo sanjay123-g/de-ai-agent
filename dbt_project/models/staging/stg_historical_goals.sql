@@ -1,19 +1,20 @@
-with source as (
-    select * from {{ source('bronze', 'RAW_HISTORICAL_GOALS') }}
+-- Staging model for historical_goals
+WITH source AS (
+    SELECT *
+    FROM {{ source('bronze', 'RAW_HISTORICAL_GOALS') }}
 ),
-
-renamed as (
-    select
-    DATE AS date,
-    HOME_TEAM AS home_team,
-    AWAY_TEAM AS away_team,
-    TEAM AS team,
-    SCORER AS scorer,
-    MINUTE AS minute,
-    OWN_GOAL AS own_goal,
-    PENALTY AS penalty,
+renamed AS (
+    SELECT
+        TRY_CAST(date AS DATE) AS game_date,
+        LOWER(home_team) AS home_team,
+        LOWER(away_team) AS away_team,
+        LOWER(team) AS team,
+        LOWER(scorer) AS scorer,
+        minute::NUMBER AS minute,
+        own_goal::BOOLEAN AS own_goal,
+        penalty::BOOLEAN AS penalty,
         CURRENT_TIMESTAMP() AS _loaded_at
-    from source
+    FROM source
 )
-
-select * from renamed
+SELECT * FROM renamed
+WHERE game_date IS NOT NULL AND home_team IS NOT NULL AND away_team IS NOT NULL AND team IS NOT NULL AND scorer IS NOT NULL AND minute IS NOT NULL AND own_goal IS NOT NULL AND penalty IS NOT NULL

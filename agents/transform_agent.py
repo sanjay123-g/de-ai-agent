@@ -235,6 +235,7 @@ def _derive_model_name(source_name: str) -> str:
 
 
 def _write_staging_model(model_name: str, model_sql: str) -> Path:
+    model_sql = model_sql.strip().rstrip(';').strip()
     """
     Writes the dbt staging SQL file.
     Creates the staging directory if it doesn't exist.
