@@ -1,6 +1,6 @@
 # de-ai-agent
 
-Multi-agent data engineering pipeline that ingests FIFA World Cup 2026 data from 6 heterogeneous sources into Snowflake, transforms it with dbt into Gold-layer analytics marts, and exposes it through a local-LLM natural-language query agent — orchestrated by a LangGraph state machine.
+Multi-agent data engineering pipeline that ingests FIFA World Cup 2026 data from 6 heterogeneous sources into Snowflake, transforms it with dbt into Gold-layer analytics marts, and exposes it through a natural-language query agent — orchestrated by a LangGraph state machine.
 
 ![Architecture](docs/architecture.svg)
 
@@ -10,21 +10,21 @@ Multi-agent data engineering pipeline that ingests FIFA World Cup 2026 data from
 - **Heterogeneous source ingestion**: CSV, SQLite, and a live REST API — three real-world ingestion patterns.
 - **Data-driven quality profiling**: a single-pass column profiler computes null rate, uniqueness, and value-range statistics from real sampled data and auto-generates dbt tests.
 - **Gold-layer analytics marts**: real joins/aggregations (team performance, goal analytics, squad profile) — not just renamed tables.
-- **AI query layer**: natural-language question → SQL → guardrail validation → Snowflake execution → plain-English answer, using a local `qwen2.5-coder:14b` model. Includes conversational routing, session memory, and an evaluation suite.
+- **AI query layer**: natural-language question → SQL → guardrail validation → Snowflake execution → plain-English answer. Includes conversational routing, session memory, and an evaluation suite.
 - **Governance**: automatic PII detection, Snowflake query tagging, dead-letter routing, SLO breach detection, deterministic SQL guardrails blocking destructive queries.
 - **Real data only**: all 6 sources use real, verifiable data sourced from [openfootball](https://github.com/openfootball/worldcup.json) (public domain) — synthetic data was explicitly rejected during development.
 - **Deployed as a service**: FastAPI `/v1/nl-to-sql` endpoint, containerized with Docker, with a Streamlit front end.
 
 ## Sources
 
-| Source | Type | Rows | Notes |
-|---|---|---|---|
-| `historical_results` | CSV | 49,481 | International match results, 1872–present |
-| `historical_goals` | CSV | 47,575 | Goalscorers linked to results |
-| `historical_shootouts` | CSV | 680 | Penalty shootout outcomes |
-| `worldcup_api` | REST API | 412 | Live WC 2026 fixtures/scores, 2 tables |
-| `national_teams` | SQLite | 48 | Real WC 2026 qualified teams + groups |
-| `player_profiles` | SQLite | 1,248 | Real WC 2026 full squad rosters |
+| Source                 | Type     | Rows   | Notes                                     |
+| ----------------------- | -------- | ------ | ------------------------------------------ |
+| `historical_results`   | CSV      | 49,481 | International match results, 1872–present |
+| `historical_goals`     | CSV      | 47,575 | Goalscorers linked to results             |
+| `historical_shootouts` | CSV      | 680    | Penalty shootout outcomes                 |
+| `worldcup_api`         | REST API | 412    | Live WC 2026 fixtures/scores, 2 tables     |
+| `national_teams`       | SQLite   | 48     | Real WC 2026 qualified teams + groups      |
+| `player_profiles`      | SQLite   | 1,248  | Real WC 2026 full squad rosters            |
 
 ## Gold-layer marts
 
@@ -40,6 +40,16 @@ Multi-agent data engineering pipeline that ingests FIFA World Cup 2026 data from
 - **Ingestion**: `snowflake-connector-python`, `httpx`, `sqlite3`
 - **LLM**: local Ollama, `qwen2.5-coder:14b` — code-specialized model for SQL generation
 - **Serving**: FastAPI + Streamlit, Docker containerized
+
+### Why a local model instead of Claude/OpenAI API
+
+The query agent runs locally via Ollama rather than a hosted API. This was a deliberate choice for this project, not an oversight:
+
+- Zero per-query cost while iterating on prompt and guardrail design across all 6 sources
+- No data leaving the local environment during development
+- A smaller local model is more failure-prone at SQL generation than a frontier hosted model, which made it a good stress test for the deterministic guardrail and eval layers described above
+
+**Tradeoff:** lower raw SQL-generation accuracy than Claude/GPT-class models. The guardrail and eval layers exist specifically to catch and route around that. A production version of this system would swap in a hosted model (e.g., Claude) for the generation step while keeping the same guardrail/eval architecture around it — the architecture is model-agnostic by design.
 
 ## Running it
 
@@ -66,4 +76,14 @@ streamlit run streamlit_app.py    # UI on :8501
 
 ## Status
 
-All 6 sources ingest, transform, and pass dbt tests end-to-end against Snowflake. Gold-layer marts built with real joins/aggregations. Query agent, guardrails, eval suite, FastAPI, Docker, and Streamlit are working end-to-end. Still in progress: Prefect deployment to a live server, observability/tracing (LangSmith/Phoenix), automated schema-diff detection.
+All 6 sources ingest, transform, and pass dbt tests end-to-end against Snowflake. Gold-layer marts built with real joins/aggregations. Query agent, guardrails, eval suite, FastAPI, Docker, and Streamlit are working end-to-end.
+
+**Still in progress:** Prefect deployment to a live server, observability/tracing (LangSmith/Phoenix), automated schema-diff detection.
+
+## Author
+
+Sanjay Gopinath — Analytics Engineer (8+ years, Snowflake/dbt/SQL/Python) building production AI systems on top of data infrastructure. [LinkedIn](https://www.linkedin.com/in/gopinathsanjay/)
+
+## License
+
+MIT
