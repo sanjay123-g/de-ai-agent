@@ -1,118 +1,89 @@
-# Cloud-Cube FP&A AI
+# de-ai-agent
 
-> A local, production-grade Financial Planning & Analysis engine powered by dbt, DuckDB, and AI.
-> Query your financials in plain English. Detect anomalies automatically. Zero cloud costs.
+Multi-agent data engineering pipeline that ingests FIFA World Cup 2026 data from 6 heterogeneous sources into Snowflake, transforms it with dbt into Gold-layer analytics marts, and exposes it through a natural-language query agent — orchestrated by a LangGraph state machine.
 
-![dbt](https://img.shields.io/badge/dbt-1.8.0-orange)
-![DuckDB](https://img.shields.io/badge/DuckDB-0.10.3-yellow)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-green)
-![Python](https://img.shields.io/badge/Python-3.11.9-blue)
+![Architecture](docs/architecture.svg)
 
----
+## What this demonstrates
 
-## What It Does
+- **Multi-agent orchestration** (LangGraph): 5 agents run as a deterministic state graph per source, with retry logic and error routing.
+- **Heterogeneous source ingestion**: CSV, SQLite, and a live REST API — three real-world ingestion patterns.
+- **Data-driven quality profiling**: a single-pass column profiler computes null rate, uniqueness, and value-range statistics from real sampled data and auto-generates dbt tests.
+- **Gold-layer analytics marts**: real joins/aggregations (team performance, goal analytics, squad profile) — not just renamed tables.
+- **AI query layer**: natural-language question → SQL → guardrail validation → Snowflake execution → plain-English answer. Includes conversational routing, session memory, and an evaluation suite.
+- **Governance**: automatic PII detection, Snowflake query tagging, dead-letter routing, SLO breach detection, deterministic SQL guardrails blocking destructive queries.
+- **Real data only**: all 6 sources use real, verifiable data sourced from [openfootball](https://github.com/openfootball/worldcup.json) (public domain) — synthetic data was explicitly rejected during development.
+- **Deployed as a service**: FastAPI `/v1/nl-to-sql` endpoint, containerized with Docker, with a Streamlit front end.
 
-- **dbt pipeline** — transforms raw financial transactions through staging and marts layers with automated data quality tests
-- **AI agent** — type a question in plain English, get SQL executed against a real database instantly
-- **Anomaly detection** — automatically flags duplicate transactions, budget overruns, and unmapped accounts
-- **Live macro benchmarks** — pulls real GDP and inflation data from the World Bank API
-- **Pivot table dashboard** — drag-and-drop financial explorer in the browser
+## Sources
 
----
+| Source                 | Type     | Rows   | Notes                                     |
+| ----------------------- | -------- | ------ | ------------------------------------------ |
+| `historical_results`   | CSV      | 49,481 | International match results, 1872–present |
+| `historical_goals`     | CSV      | 47,575 | Goalscorers linked to results             |
+| `historical_shootouts` | CSV      | 680    | Penalty shootout outcomes                 |
+| `worldcup_api`         | REST API | 412    | Live WC 2026 fixtures/scores, 2 tables     |
+| `national_teams`       | SQLite   | 48     | Real WC 2026 qualified teams + groups      |
+| `player_profiles`      | SQLite   | 1,248  | Real WC 2026 full squad rosters            |
 
-## Quickstart
+## Gold-layer marts
 
-Clone and setup:
-```bash
-git clone https://github.com/sanjay123-g/cloud-cube-fpa-ai.git
-cd cloud-cube-fpa-ai
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-```
-
-Build the database:
-```bash
-cd fpa_dbt_project
-dbt seed --profiles-dir .
-dbt run --profiles-dir .
-dbt test --profiles-dir .
-cd ..
-```
-
-Start the API server:
-```bash
-python Excel_bridge/mock_excel_addin.py
-```
-
-Open the dashboard:
-```bash
-open frontend_dashboard/index.html
-```
-
----
+- `mart_team_performance` — points, W/D/L, clean sheets, home/away splits
+- `mart_goal_analytics` — goal-minute distribution, penalty share, own goals
+- `mart_squad_profile` — squad age, position mix, legionnaire %
 
 ## Stack
 
-| Layer          | Tool                                 |
-| -------------- | ------------------------------------- |
-| Warehouse      | DuckDB (local) → Snowflake (roadmap)  |
-| Transformation | dbt Core 1.8                          |
-| AI Agent       | Groq API — llama-3.3-70b (free tier)  |
-| API            | FastAPI + uvicorn                     |
-| Frontend       | WebDataRocks pivot + vanilla JS       |
-| External Data  | World Bank API (free, no key)         |
+- **Orchestration**: LangGraph (pipeline) + Prefect (flow written, not yet deployed to a live server — see `docs/adr/DECISIONS.md`)
+- **Warehouse**: Snowflake — Bronze / Silver / Gold layering
+- **Transformation**: dbt + `dbt_expectations`, `dbt_date` packages
+- **Ingestion**: `snowflake-connector-python`, `httpx`, `sqlite3`
+- **LLM**: local Ollama, `qwen2.5-coder:14b` — code-specialized model for SQL generation
+- **Serving**: FastAPI + Streamlit, Docker containerized
 
----
+### Why a local model instead of Claude/OpenAI API
 
-## Project Structure
+The query agent runs locally via Ollama rather than a hosted API. This was a deliberate choice for this project, not an oversight:
 
+- Zero per-query cost while iterating on prompt and guardrail design across all 6 sources
+- No data leaving the local environment during development
+- A smaller local model is more failure-prone at SQL generation than a frontier hosted model, which made it a good stress test for the deterministic guardrail and eval layers described above
+
+**Tradeoff:** lower raw SQL-generation accuracy than Claude/GPT-class models. The guardrail and eval layers exist specifically to catch and route around that. A production version of this system would swap in a hosted model (e.g., Claude) for the generation step while keeping the same guardrail/eval architecture around it — the architecture is model-agnostic by design.
+
+## Running it
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # fill in Snowflake credentials
+
+python seed_fifa_db.py                                    # seed local SQLite sources
+python -m agents.supervisor --source historical_results   # run one source
+python -m agents.supervisor                                # run all 6 sources
+
+# Query layer
+uvicorn api:app --reload          # FastAPI on :8000
+streamlit run streamlit_app.py    # UI on :8501
 ```
-fpa_dbt_project/       dbt project (models, seeds, tests)
-  models/staging/      stg_ledger — type casting layer
-  models/marts/        fct_ledger — aggregated metrics
-  seeds/               raw_ledger.csv source data
-backend_agent/         Python AI agent + anomaly detection
-Excel_bridge/          FastAPI server (3 endpoints)
-frontend_dashboard/    Dark theme pivot table UI
-portfolio_assets/      Case study documentation
-```
 
----
+## Documentation
 
-## API Endpoints
+- Architecture decisions: `docs/adr/DECISIONS.md`
+- Governance (retention, PII, access, human-in-the-loop): `docs/governance/GOVERNANCE.md`
+- Runbook (common operational tasks): `docs/RUNBOOK.md`
+- Eval suite: `evals/`
 
-| Method | Route      | Description                          |
-| ------ | ---------- | ------------------------------------- |
-| GET    | /          | Health check                          |
-| POST   | /api/query | Natural language to SQL to results    |
-| GET    | /api/audit | Full anomaly detection report         |
-| GET    | /api/data  | Raw fct_ledger data for pivot table   |
+## Status
 
----
+All 6 sources ingest, transform, and pass dbt tests end-to-end against Snowflake. Gold-layer marts built with real joins/aggregations. Query agent, guardrails, eval suite, FastAPI, Docker, and Streamlit are working end-to-end.
 
-## Data Quality
-
-17 automated dbt tests run on every build:
-- Uniqueness and not_null checks on `transaction_id`
-- Accepted-values check on `scenario` (Actual/Budget only)
-- 3 duplicate transaction IDs caught by the uniqueness test
-- IT department budget overrun at 190% caught by the anomaly detector
-
----
-
-## Roadmap
-
-- Phase 6 — Real public dataset + star schema
-- Phase 7 — Snowflake migration
-- Phase 8 — Dagster orchestration
-- Phase 9 — GitHub Actions CI/CD
-- Phase 10 — UI redesign with charts and export
-- Phase 11 — Interactive CLI for dynamic querying
-
----
+**Still in progress:** Prefect deployment to a live server, observability/tracing (LangSmith/Phoenix), automated schema-diff detection.
 
 ## Author
 
-Sanjay Gopinath — Analytics Engineer (8+ years) transitioning into AI Engineering, building production AI systems on top of modern data infrastructure.
-Stack: dbt · Snowflake · Python · FastAPI · LangChain · Claude API
-[LinkedIn](https://www.linkedin.com/in/gopinathsanjay/) · [Other projects](https://github.com/sanjay123-g)
+Sanjay Gopinath — Analytics Engineer (8+ years, Snowflake/dbt/SQL/Python) building production AI systems on top of data infrastructure. [LinkedIn](https://www.linkedin.com/in/gopinathsanjay/)
+
+## License
+
+MIT
