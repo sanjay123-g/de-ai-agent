@@ -14,7 +14,7 @@ renamed AS (
         LOWER(team_name) AS team_name,
         LOWER(fifa_code) AS fifa_code,
         LOWER(group_name) AS group_name,
-        CURRENT_TIMESTAMP() AS _loaded_at
+        CURRENT_TIMESTAMP AS _loaded_at
     FROM source
 )
 SELECT

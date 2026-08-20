@@ -132,16 +132,63 @@ def _llm_validate_schema(
     return _str_to_schema(validated)
 
 
+def _validate_int_corrections(
+    source_name: str,
+    original_schema: dict[str, type],
+    validated_schema: dict[str, type],
+    sample_rows: list[dict] | None,
+) -> dict[str, type]:
+    """
+    Safety net for LLM type corrections: the LLM sometimes decides a
+    column is int based on its NAME alone (e.g. "minute" -> looks like a
+    whole-number measurement) without seeing that real values include
+    things like stoppage-time "90+4", which is not a valid int.
+
+    If sample rows are available, verify every column the LLM corrected
+    TO int actually has int-parseable values. If any sample value fails,
+    revert that single column back to str rather than trusting the
+    name-based guess. This never touches columns the LLM didn't change.
+    """
+    if not sample_rows:
+        return validated_schema
+
+    corrected_to_int = {
+        col for col, t in validated_schema.items()
+        if t is int and original_schema.get(col) is not int
+    }
+    if not corrected_to_int:
+        return validated_schema
+
+    for col in corrected_to_int:
+        values = [row.get(col) for row in sample_rows[:20] if row.get(col) not in (None, "")]
+        for v in values:
+            try:
+                int(v)
+            except (ValueError, TypeError):
+                logger.warning(
+                    "schema_int_correction_reverted",
+                    source=source_name,
+                    column=col,
+                    bad_sample_value=v,
+                    reason="LLM corrected to int based on column name, but real sample value is not int-parseable",
+                )
+                validated_schema[col] = str
+                break
+
+    return validated_schema
+
+
 def _validate_with_fallback(
     source_name: str,
     schema_map: dict[str, type],
+    sample_rows: list[dict] | None = None,
 ) -> dict[str, type]:
     """LLM validation with guaranteed fallback — pipeline never dies over schema validation."""
     try:
         result = _llm_validate_schema(source_name, schema_map)
         if result is None:
             raise ValueError("LLM returned None")
-        return result
+        return _validate_int_corrections(source_name, schema_map, result, sample_rows)
     except Exception as e:
         logger.warning(
             "schema_llm_fallback",
@@ -304,8 +351,8 @@ def schema_agent_node(state: AgentState) -> dict[str, Any]:
             goal_schema  = infer_from_json_rows(goal_rows) if goal_rows else {}
 
             return {
-                "schema_map":           _validate_with_fallback(f"{source_name}_matches", match_schema),
-                "secondary_schema_map": _validate_with_fallback(f"{source_name}_goals", goal_schema) if goal_schema else None,
+                "schema_map":           _validate_with_fallback(f"{source_name}_matches", match_schema, match_rows),
+                "secondary_schema_map": _validate_with_fallback(f"{source_name}_goals", goal_schema, goal_rows) if goal_schema else None,
                 "status":               "schema_done",
                 "error":                None,
             }

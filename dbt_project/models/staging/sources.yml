@@ -1,7 +1,6 @@
 version: 2
 sources:
 - name: bronze
-  database: DE_AI_AGENT_DEV
   schema: BRONZE
   description: Raw Bronze layer — unmodified data from all ingestion sources
   tables:

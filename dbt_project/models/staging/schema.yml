@@ -13,11 +13,11 @@ models:
     tests:
     - not_null
   - name: home_team
-    description: The name of the home team in lowercase.
+    description: The name of the home team, converted to lowercase for consistency.
     tests:
     - not_null
   - name: away_team
-    description: The name of the away team in lowercase.
+    description: The name of the away team, converted to lowercase for consistency.
     tests:
     - not_null
   - name: home_score
@@ -29,36 +29,38 @@ models:
     tests:
     - not_null
   - name: tournament
-    description: The tournament name in lowercase.
+    description: The tournament in which the match was played, converted to lowercase
+      for consistency.
     tests:
     - not_null
   - name: city
-    description: The city where the match was held, in lowercase.
+    description: The city where the match was held, converted to lowercase for consistency.
     tests:
     - not_null
   - name: country
-    description: The country where the match was held, in lowercase.
+    description: The country where the match was held, converted to lowercase for
+      consistency.
     tests:
     - not_null
   - name: neutral
-    description: A boolean indicating if the match was played on neutral ground.
+    description: A boolean indicating whether the match was played on neutral ground.
     tests:
     - not_null
   - name: _loaded_at
-    description: Timestamp when this record was loaded into the staging layer.
+    description: Timestamp of when this record was loaded into the staging layer.
 - name: stg_historical_goals
   description: Silver staging model for historical goals
   columns:
-  - name: game_date
-    description: The date of the game when the goal was scored.
+  - name: date
+    description: The date of the goal scored.
     tests:
     - not_null
   - name: home_team
-    description: The name of the home team in the match.
+    description: The name of the home team.
     tests:
     - not_null
   - name: away_team
-    description: The name of the away team in the match.
+    description: The name of the away team.
     tests:
     - not_null
   - name: team
@@ -76,15 +78,15 @@ models:
     tests:
     - not_null
   - name: own_goal
-    description: Indicates whether the goal was an own goal (TRUE) or not (FALSE).
+    description: Indicates if the goal was an own goal.
     tests:
     - not_null
   - name: penalty
-    description: Indicates whether the goal was a penalty kick (TRUE) or not (FALSE).
+    description: Indicates if the goal was a penalty.
     tests:
     - not_null
   - name: _loaded_at
-    description: Timestamp indicating when this record was loaded into the staging
+    description: Timestamp indicating when the record was loaded into the staging
       layer.
 - name: stg_historical_shootouts
   description: Silver staging model for historical shootouts
@@ -94,21 +96,21 @@ models:
     tests:
     - not_null
   - name: home_team
-    description: The name of the home team in lowercase.
+    description: The home team participating in the shootout.
     tests:
     - not_null
   - name: away_team
-    description: The name of the away team in lowercase.
+    description: The away team participating in the shootout.
     tests:
     - not_null
   - name: winner
-    description: The winner of the shootout in lowercase.
+    description: The winning team of the shootout.
     tests:
     - not_null
   - name: first_shooter
-    description: The first shooter in the shootout in lowercase.
+    description: The first shooter in the shootout.
   - name: _loaded_at
-    description: Timestamp indicating when the record was loaded into the staging
+    description: Timestamp indicating when this record was loaded into the staging
       layer.
 - name: stg_worldcup_api
   description: Silver staging model for worldcup api
@@ -168,7 +170,7 @@ models:
 - name: stg_worldcup_api_secondary
   description: Silver staging model for worldcup api secondary
   columns:
-  - name: match_num
+  - name: match_number
     description: The unique identifier for the match.
     tests:
     - not_null
@@ -247,7 +249,8 @@ models:
     description: Name of the team the player is associated with, converted to lowercase
       for consistency.
   - name: position
-    description: Position played by the player, converted to lowercase for consistency.
+    description: Position played by the player on the field, converted to lowercase
+      for consistency.
   - name: jersey_number
     description: Number worn by the player on their jersey.
     tests:

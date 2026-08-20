@@ -17,7 +17,7 @@ WITH source AS (
 ),
 renamed AS (
     SELECT
-        match_num::NUMBER AS match_num,
+        match_num::BIGINT AS match_num,
         TRY_CAST(match_date AS DATE) AS match_date,
         TRY_CAST(match_time AS TIME) AS match_time,
         LOWER(round_name) AS round_name,
@@ -25,11 +25,11 @@ renamed AS (
         LOWER(ground) AS ground,
         LOWER(team1_name) AS team1_name,
         LOWER(team2_name) AS team2_name,
-        score_ft_team1::NUMBER AS score_ft_team1,
-        score_ft_team2::NUMBER AS score_ft_team2,
-        score_ht_team1::NUMBER AS score_ht_team1,
-        score_ht_team2::NUMBER AS score_ht_team2,
-        CURRENT_TIMESTAMP() AS _loaded_at
+        score_ft_team1::BIGINT AS score_ft_team1,
+        score_ft_team2::BIGINT AS score_ft_team2,
+        score_ht_team1::BIGINT AS score_ht_team1,
+        score_ht_team2::BIGINT AS score_ht_team2,
+        CURRENT_TIMESTAMP AS _loaded_at
     FROM source
 )
 SELECT * FROM renamed

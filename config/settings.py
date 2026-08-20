@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     snowflake_warehouse: str = "DE_WH"
     snowflake_role:      str = "DE_INGEST_ROLE"
 
+    # ── DuckDB ────────────────────────────────────────────────────────────
+    duckdb_path: str = "./data/fifa.duckdb"
+
     # ── dbt ───────────────────────────────────────────────────────────────
     dbt_target: str = "dev"
     dbt_project_dir: str = "./dbt_project"

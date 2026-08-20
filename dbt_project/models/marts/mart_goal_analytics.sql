@@ -6,13 +6,13 @@ with goals as (
         own_goal,
         penalty,
         case
-            when try_to_number(minute) between 0 and 15 then '0-15'
-            when try_to_number(minute) between 16 and 30 then '16-30'
-            when try_to_number(minute) between 31 and 45 then '31-45'
-            when try_to_number(minute) between 46 and 60 then '46-60'
-            when try_to_number(minute) between 61 and 75 then '61-75'
-            when try_to_number(minute) between 76 and 90 then '76-90'
-            when try_to_number(minute) > 90 then '90+'
+            when TRY_CAST(minute AS INTEGER) between 0 and 15 then '0-15'
+            when TRY_CAST(minute AS INTEGER) between 16 and 30 then '16-30'
+            when TRY_CAST(minute AS INTEGER) between 31 and 45 then '31-45'
+            when TRY_CAST(minute AS INTEGER) between 46 and 60 then '46-60'
+            when TRY_CAST(minute AS INTEGER) between 61 and 75 then '61-75'
+            when TRY_CAST(minute AS INTEGER) between 76 and 90 then '76-90'
+            when TRY_CAST(minute AS INTEGER) > 90 then '90+'
             else 'unknown'
         end as minute_bucket
     from {{ ref('stg_historical_goals') }}

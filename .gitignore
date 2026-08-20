@@ -34,3 +34,5 @@ data/*.db
 dbt_project/dbt_packages/
 dbt_project/target/
 dbt_project/logs/
+data/*.duckdb
+chroma_db/

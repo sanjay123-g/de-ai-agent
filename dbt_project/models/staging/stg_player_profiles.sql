@@ -7,14 +7,14 @@ WITH source AS (
 renamed AS (
     SELECT
         TRY_CAST(player_id AS VARCHAR) AS player_id,
-        LOWER(player_name) AS player_name,
-        LOWER(team_name) AS team_name,
-        LOWER(position) AS position,
-        jersey_number::NUMBER AS jersey_number,
-        LOWER(club_name) AS club_name,
-        LOWER(club_country) AS club_country,
+        LOWER(TRY_CAST(player_name AS VARCHAR)) AS player_name,
+        LOWER(TRY_CAST(team_name AS VARCHAR)) AS team_name,
+        LOWER(TRY_CAST(position AS VARCHAR)) AS position,
+        TRY_CAST(jersey_number AS BIGINT) AS jersey_number,
+        LOWER(TRY_CAST(club_name AS VARCHAR)) AS club_name,
+        LOWER(TRY_CAST(club_country AS VARCHAR)) AS club_country,
         TRY_CAST(date_of_birth AS DATE) AS date_of_birth,
-        CURRENT_TIMESTAMP() AS _loaded_at
+        CURRENT_TIMESTAMP AS _loaded_at
     FROM source
 )
 SELECT

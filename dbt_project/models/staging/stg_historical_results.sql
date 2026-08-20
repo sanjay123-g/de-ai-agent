@@ -20,13 +20,13 @@ renamed AS (
         TRY_CAST(date AS DATE) AS date,
         LOWER(home_team) AS home_team,
         LOWER(away_team) AS away_team,
-        home_score::NUMBER AS home_score,
-        away_score::NUMBER AS away_score,
+        home_score::BIGINT AS home_score,
+        away_score::BIGINT AS away_score,
         LOWER(tournament) AS tournament,
         LOWER(city) AS city,
         LOWER(country) AS country,
         neutral::BOOLEAN AS neutral,
-        CURRENT_TIMESTAMP() AS _loaded_at
+        CURRENT_TIMESTAMP AS _loaded_at
     FROM source
 )
 SELECT

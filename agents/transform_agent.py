@@ -82,16 +82,19 @@ _SCHEMA_FILE = _STAGING_DIR / "schema.yml"
 _llm = ChatOllama(model=settings.ollama_model, temperature=0, format="json")
 
 _TRANSFORM_SYSTEM_PROMPT = """You are a senior analytics engineer writing dbt Silver staging models.
+The target database is DuckDB — use DuckDB SQL syntax only, never Snowflake syntax.
+DuckDB type names: VARCHAR, BIGINT, DOUBLE, BOOLEAN, DATE, TIMESTAMP, DECIMAL(p,s).
+Never use Snowflake-only types (NUMBER, TIMESTAMP_NTZ, VARIANT) or Snowflake-only functions.
 Given a Bronze table name and its column schema, generate a production-quality dbt staging model.
 
 Rules:
 - Source Bronze table is in schema BRONZE, referenced as {{ source('bronze', 'table_name') }}
 - Apply these casts universally (not domain-specific):
-    VARCHAR columns ending in _at, _date, _time, date, time → TRY_CAST(col AS DATE) or TIMESTAMP_NTZ
-    NUMBER/INT columns that are boolean flags (is_, has_, was_) → col::BOOLEAN
+    VARCHAR columns ending in _at, _date, _time, date, time → TRY_CAST(col AS DATE) or TRY_CAST(col AS TIMESTAMP)
+    BIGINT/INT columns that are boolean flags (is_, has_, was_) → col::BOOLEAN
     VARCHAR columns with only uppercase → LOWER(col) AS col
 - Rename columns to snake_case if not already
-- Add a _loaded_at audit column: CURRENT_TIMESTAMP() AS _loaded_at
+- Add a _loaded_at audit column: CURRENT_TIMESTAMP AS _loaded_at
 - Exclude audit columns _ingested_at, _source_name, _pipeline_run_id from SELECT
   (these are pipeline metadata, not business data)
 - Use CTEs: one `source` CTE, one `renamed` CTE, final SELECT from renamed
@@ -126,7 +129,7 @@ def _llm_generate_staging_model(
     # Convert types to strings for the prompt
     schema_str = {
         col: {
-            str: "VARCHAR", int: "NUMBER", float: "FLOAT",
+            str: "VARCHAR", int: "BIGINT", float: "DOUBLE",
             bool: "BOOLEAN"
         }.get(t, "VARCHAR")
         for col, t in schema_map.items()
@@ -175,7 +178,7 @@ def _build_fallback_model(
 renamed as (
     select
 {cols_sql},
-        CURRENT_TIMESTAMP() AS _loaded_at
+        CURRENT_TIMESTAMP AS _loaded_at
     from source
 )
 

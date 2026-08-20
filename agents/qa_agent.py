@@ -88,7 +88,7 @@ def _run_dbt_test(model_name: str) -> subprocess.CompletedProcess:
         "--project-dir", str(_DBT_PROJECT_DIR),
     ]
     logger.info("dbt_test_running", model=model_name, cmd=" ".join(cmd))
-    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(_PROJECT_ROOT))
+    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(_DBT_PROJECT_DIR))
 
 
 def _run_dbt_compile(model_name: str) -> subprocess.CompletedProcess:
@@ -103,7 +103,7 @@ def _run_dbt_compile(model_name: str) -> subprocess.CompletedProcess:
         "--profiles-dir", str(_DBT_PROJECT_DIR),
         "--project-dir", str(_DBT_PROJECT_DIR),
     ]
-    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(_PROJECT_ROOT))
+    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(_DBT_PROJECT_DIR))
 
 
 def _run_dbt_run(model_name: str) -> subprocess.CompletedProcess:
@@ -119,7 +119,7 @@ def _run_dbt_run(model_name: str) -> subprocess.CompletedProcess:
         "--profiles-dir", str(_DBT_PROJECT_DIR),
         "--project-dir", str(_DBT_PROJECT_DIR),
     ]
-    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(_PROJECT_ROOT))
+    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(_DBT_PROJECT_DIR))
 
 
 # ---------------------------------------------------------------------------

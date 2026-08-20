@@ -2,27 +2,13 @@ de_ai_agent:
   target: dev
   outputs:
     dev:
-      type: snowflake
-      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
-      user: "{{ env_var('SNOWFLAKE_USER') }}"
-      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
-      role: DE_TRANSFORM_ROLE
-      database: DE_AI_AGENT_DEV
-      warehouse: DE_WH
+      type: duckdb
+      path: "../data/fifa.duckdb"
       schema: SILVER
       threads: 4
-      client_session_keep_alive: false
-      query_tag: "dbt_dev_run"
 
     prod:
-      type: snowflake
-      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
-      user: "{{ env_var('SNOWFLAKE_USER') }}"
-      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
-      role: DE_TRANSFORM_ROLE
-      database: DE_AI_AGENT_PROD
-      warehouse: DE_WH
+      type: duckdb
+      path: "../data/fifa_prod.duckdb"
       schema: SILVER
       threads: 4
-      client_session_keep_alive: false
-      query_tag: "dbt_prod_run"
