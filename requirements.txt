@@ -1,7 +1,7 @@
 # ── Core ──────────────────────────────────────────────────────
 python-dotenv==1.0.1
-pydantic==2.7.1
-pydantic-settings==2.3.1
+pydantic>=2.7.4,<3.0.0
+pydantic-settings>=2.3.1
 
 # ── Snowflake (original backend — see docs/adr/DECISIONS.md for the
 #    migration to DuckDB; kept here for reference/history) ────────
