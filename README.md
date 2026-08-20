@@ -1,8 +1,16 @@
 # de-ai-agent
 
-Multi-agent data engineering pipeline that ingests FIFA World Cup 2026 data from 6 heterogeneous sources into Snowflake, transforms it with dbt into Gold-layer analytics marts, and exposes it through a natural-language query agent — orchestrated by a LangGraph state machine.
+A production-shaped data engineering pipeline that ingests FIFA World Cup 2026 data from 6 heterogeneous sources into DuckDB, transforms it with dbt into Gold-layer analytics marts, and exposes it through a natural-language hybrid SQL + RAG query agent — orchestrated by a LangGraph state machine.
 
-![Architecture](docs/architecture.svg)
+Originally built on Snowflake; migrated to DuckDB after the Snowflake trial expired twice mid-build. Full rationale in `docs/adr/DECISIONS.md` — the Snowflake-era design and git history are kept visible, not erased, since the tradeoffs made along the way are part of the story.
+
+## Data pipeline
+
+![Data Pipeline](docs/architecture.svg)
+
+## Query agent — hybrid SQL + RAG
+
+![RAG Flow](docs/rag_flow.svg)
 
 ## What this demonstrates
 
@@ -10,10 +18,12 @@ Multi-agent data engineering pipeline that ingests FIFA World Cup 2026 data from
 - **Heterogeneous source ingestion**: CSV, SQLite, and a live REST API — three real-world ingestion patterns.
 - **Data-driven quality profiling**: a single-pass column profiler computes null rate, uniqueness, and value-range statistics from real sampled data and auto-generates dbt tests.
 - **Gold-layer analytics marts**: real joins/aggregations (team performance, goal analytics, squad profile) — not just renamed tables.
-- **AI query layer**: natural-language question → SQL → guardrail validation → Snowflake execution → plain-English answer. Includes conversational routing, session memory, and an evaluation suite.
-- **Governance**: automatic PII detection, Snowflake query tagging, dead-letter routing, SLO breach detection, deterministic SQL guardrails blocking destructive queries.
+- **Hybrid SQL + RAG query agent**: a router classifies each question as structured (→ SQL, grounded via ChromaDB schema retrieval + real categorical values, fuzzy-matched against the question) or unstructured (→ retrieval over real Wikipedia team content, answered directly with honest refusal when the retrieved context doesn't contain the answer).
+- **SQL safety**: every generated query is parsed via `sqlglot` into a real AST — destructive statement types are blocked structurally, not by regex keyword matching — and access is restricted to the GOLD schema only.
+- **Governance**: automatic PII detection, dead-letter routing, SLO breach detection.
 - **Real data only**: all 6 sources use real, verifiable data sourced from [openfootball](https://github.com/openfootball/worldcup.json) (public domain) — synthetic data was explicitly rejected during development.
 - **Deployed as a service**: FastAPI `/v1/nl-to-sql` endpoint, containerized with Docker, with a Streamlit front end.
+- **Evaluation suite**: golden query set scoring execution success and correct-table routing accuracy.
 
 ## Sources
 
@@ -35,9 +45,11 @@ Multi-agent data engineering pipeline that ingests FIFA World Cup 2026 data from
 ## Stack
 
 - **Orchestration**: LangGraph (pipeline) + Prefect (flow written, not yet deployed to a live server — see `docs/adr/DECISIONS.md`)
-- **Warehouse**: Snowflake — Bronze / Silver / Gold layering
+- **Warehouse**: DuckDB — Bronze / Silver / Gold layering. Originally Snowflake; migrated after the free trial expired twice mid-build (see `docs/adr/DECISIONS.md`).
 - **Transformation**: dbt + `dbt_expectations`, `dbt_date` packages
-- **Ingestion**: `snowflake-connector-python`, `httpx`, `sqlite3`
+- **Ingestion**: `duckdb`, `httpx`, `sqlite3`
+- **RAG**: ChromaDB — two collections, one for Gold schema grounding, one for unstructured Wikipedia content
+- **SQL safety**: `sqlglot` — AST-based validation, not regex
 - **LLM**: local Ollama, `qwen2.5-coder:14b` — code-specialized model for SQL generation
 - **Serving**: FastAPI + Streamlit, Docker containerized
 
@@ -51,12 +63,16 @@ The query agent runs locally via Ollama rather than a hosted API. This was a del
 
 **Tradeoff:** lower raw SQL-generation accuracy than Claude/GPT-class models. The guardrail and eval layers exist specifically to catch and route around that. A production version of this system would swap in a hosted model (e.g., Claude) for the generation step while keeping the same guardrail/eval architecture around it — the architecture is model-agnostic by design.
 
+### Why Snowflake first, then DuckDB
+
+The pipeline was originally built end-to-end on Snowflake — real warehouses, roles, grants, query tagging, the full Snowflake operational model. The free trial expired twice mid-build, which became a recurring, unresolvable blocker rather than a one-off inconvenience. DuckDB was already in use on another project, had zero new learning cost, and removed the trial-expiration risk entirely by running fully local. The migration preserved the same Bronze/Silver/Gold architecture and dbt project structure — only the connection layer and a handful of Snowflake-specific SQL functions changed. Full list of what broke and how it was fixed is in `docs/adr/DECISIONS.md`.
+
 ## Running it
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # fill in Snowflake credentials
+cp .env.example .env   # fill in DUCKDB_PATH (default is fine) and any optional keys
 
 python seed_fifa_db.py                                    # seed local SQLite sources
 python -m agents.supervisor --source historical_results   # run one source
@@ -69,20 +85,19 @@ streamlit run streamlit_app.py    # UI on :8501
 
 ## Documentation
 
-- Architecture decisions: `docs/adr/DECISIONS.md`
+- Architecture decisions (including the Snowflake → DuckDB migration): `docs/adr/DECISIONS.md`
 - Governance (retention, PII, access, human-in-the-loop): `docs/governance/GOVERNANCE.md`
-- Runbook (common operational tasks): `docs/RUNBOOK.md`
 - Eval suite: `evals/`
 
 ## Status
 
-All 6 sources ingest, transform, and pass dbt tests end-to-end against Snowflake. Gold-layer marts built with real joins/aggregations. Query agent, guardrails, eval suite, FastAPI, Docker, and Streamlit are working end-to-end.
+All 6 sources ingest, transform, and pass dbt tests end-to-end against DuckDB. Gold-layer marts built with real joins/aggregations. Query agent (hybrid SQL + RAG, router, sqlglot guardrails), eval suite, FastAPI, Docker, and Streamlit are working end-to-end.
 
-**Still in progress:** Prefect deployment to a live server, observability/tracing (LangSmith/Phoenix), automated schema-diff detection.
+**Still in progress:** Prefect deployment to a live server, observability/tracing (LangSmith/Phoenix), automated schema-diff detection, expanding the unstructured-content source coverage (30/48 teams currently), a player-level Gold mart.
 
 ## Author
 
-Sanjay Gopinath — Analytics Engineer (8+ years, Snowflake/dbt/SQL/Python) building production AI systems on top of data infrastructure. [LinkedIn](https://www.linkedin.com/in/gopinathsanjay/)
+Sanjay Gopinath — Analytics Engineer (8+ years, SQL/dbt/Python) building production AI systems on top of data infrastructure. [LinkedIn](https://www.linkedin.com/in/gopinathsanjay/)
 
 ## License
 
