@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Check Python syntax across the project
+        run: |
+          python -m py_compile $(find agents ingestion config -name "*.py")
+
+      - name: Verify core modules import cleanly
+        run: |
+          python -c "from agents import state, supervisor, schema_agent, ddl_agent, ingest_agent, transform_agent, qa_agent, query_agent, sql_guardrails"
+          python -c "from config import settings"
+
+      - name: dbt parse (validates project + model syntax, no DB connection needed)
+        run: |
+          pip install dbt-duckdb
+          cd dbt_project
+          dbt parse --profiles-dir . --project-dir .
